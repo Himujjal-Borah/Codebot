@@ -22,18 +22,16 @@ function App() {
     setLoading(true);
 
     try {
-      console.log('Sending request with:', { code, language, focusArea });
-      
       const response = await axios.post('http://localhost:5000/api/review', {
         code: code.trim(),
         language,
         focusArea,
       });
 
-      console.log('Response received:', response.data);
+      console.log('Full response:', response.data);
       setReview(response.data);
     } catch (err) {
-      console.error('Full error:', err);
+      console.error('Error:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Failed to review code';
       setError(errorMessage);
     } finally {
@@ -48,10 +46,10 @@ function App() {
 
   const getSeverityColor = (severity) => {
     const colors = {
-      critical: '#dc3545',
-      high: '#fd7e14',
-      medium: '#ffc107',
-      low: '#17a2b8',
+      critical: '#dc2626',
+      high: '#f97316',
+      medium: '#eab308',
+      low: '#06b6d4',
     };
     return colors[severity] || '#6c757d';
   };
@@ -60,6 +58,7 @@ function App() {
     <div className="app">
       <header className="header">
         <h1>🤖 Code Review Bot</h1>
+        <p>Get intelligent code reviews in seconds</p>
       </header>
 
       <div className="container">
@@ -75,10 +74,6 @@ function App() {
                 <option value="python">Python</option>
                 <option value="java">Java</option>
                 <option value="cpp">C++</option>
-                <option value="go">Go</option>
-                <option value="rust">Rust</option>
-                <option value="sql">SQL</option>
-                <option value="html">HTML</option>
               </select>
             </div>
 
@@ -101,7 +96,7 @@ function App() {
             <textarea
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder={`// Paste your ${language} code here...\nfunction example() {\n  // Your code...\n}`}
+              placeholder={`// Paste your ${language} code here...\nfunction example() {\n  console.log('Hello');\n}`}
               className="code-textarea"
             />
           </div>
@@ -131,46 +126,49 @@ function App() {
               <p>{review.summary || 'Code review completed.'}</p>
             </div>
 
-            {/* Issues Section */}
+            {/* CODE EXECUTION OUTPUT - IMPORTANT */}
+            {review.execution && (
+              <div className={`execution-section ${review.execution.error ? 'error' : 'success'}`}>
+                <h3>⚡ Code Execution Output</h3>
+                <div className="execution-output">
+                  {review.execution.error ? (
+                    <>
+                      <strong>❌ Error:</strong>
+                      <pre>{review.execution.error}</pre>
+                    </>
+                  ) : (
+                    <>
+                      <strong>✅ Output:</strong>
+                      <pre>{review.execution.output || '(No output)'}</pre>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Issues */}
             {review.issues && review.issues.length > 0 && (
               <div className="issues-section">
-                <h3>
-                  ⚠️ Issues Found ({review.issues.length})
-                </h3>
+                <h3>⚠️ Issues Found ({review.issues.length})</h3>
                 {review.issues.map((issue, idx) => (
                   <div
                     key={idx}
                     className="issue-card"
-                    style={{
-                      borderLeftColor: getSeverityColor(issue.severity),
-                    }}
+                    style={{ borderLeftColor: getSeverityColor(issue.severity) }}
                   >
                     <div className="issue-header">
-                      <div>
-                        <h4>{issue.title}</h4>
-                        <div className="issue-meta">
-                          <span
-                            className="type-badge"
-                            style={{
-                              backgroundColor: getSeverityColor(
-                                issue.severity
-                              ),
-                            }}
-                          >
-                            {issue.type}
-                          </span>
-                          <span className="severity-badge">
-                            {issue.severity}
-                          </span>
-                          {issue.line && issue.line !== 'N/A' && (
-                            <span className="line-badge">Line {issue.line}</span>
-                          )}
-                        </div>
+                      <h4>{issue.title}</h4>
+                      <div className="issue-meta">
+                        <span
+                          className="type-badge"
+                          style={{ backgroundColor: getSeverityColor(issue.severity) }}
+                        >
+                          {issue.type}
+                        </span>
+                        <span className="severity-badge">{issue.severity}</span>
                       </div>
                     </div>
-
                     <p className="issue-description">{issue.description}</p>
-
                     {issue.suggestion && (
                       <div className="suggestion-box">
                         <strong>💡 Fix:</strong>
@@ -188,7 +186,7 @@ function App() {
               </div>
             )}
 
-            {/* Strengths Section */}
+            {/* Strengths */}
             {review.strengths && review.strengths.length > 0 && (
               <div className="strengths-section">
                 <h3>✅ Strengths</h3>
@@ -200,7 +198,7 @@ function App() {
               </div>
             )}
 
-            {/* Improvements Section */}
+            {/* Improvements */}
             {review.improvements && review.improvements.length > 0 && (
               <div className="improvements-section">
                 <h3>💡 Suggested Improvements</h3>
