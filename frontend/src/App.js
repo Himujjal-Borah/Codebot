@@ -22,7 +22,7 @@ function App() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/review', {
+      const response = await axios.post('https://codebot-ddg7.onrender.com', {
         code: code.trim(),
         language,
         focusArea,
