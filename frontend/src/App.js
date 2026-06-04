@@ -22,11 +22,12 @@ function App() {
     setLoading(true);
 
     try {
-      const response = await axios.post('https://codebot-ddg7.onrender.com', {
+         const response = await axios.post('https://codebot-ddg7.onrender.com/api/review', {
         code: code.trim(),
         language,
         focusArea,
       });
+  
 
       console.log('Full response:', response.data);
       setReview(response.data);
